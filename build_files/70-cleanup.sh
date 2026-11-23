@@ -91,3 +91,12 @@ rm -rf \
     /usr/lib/firmware/rtl_nic \
     /usr/lib/firmware/ti-connectivity \
     /usr/lib/firmware/xe
+
+# Composefs keeps / and /usr read-only at runtime. Nix installers bind-mount /var
+# storage over a baked-in /nix, and Determinate Nix writes /usr/local/bin, so use
+# the Silverblue /usr/local -> /var/usrlocal link (tmpfiles creates the target).
+# Runs after the last dnf transaction so no scriptlet writes through the link.
+mkdir /nix
+rm -f /usr/local/share/applications/mimeinfo.cache
+find /usr/local -depth -type d -delete # fails if anything else lives there
+ln -s ../var/usrlocal /usr/local
